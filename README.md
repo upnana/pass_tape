@@ -19,8 +19,9 @@
 | 真机甜区 ckpt | **`060000`**（约 20 epoch 口径） |
 | Latency（参考） | ~**148 ms** / `select_action`（3090，同架构蓝块任务测得） |
 | 真机 SR（informal） | ≈ **2/3（≥50%）**，N≈3；瓶颈在 **第一臂空抓** |
+| 真机 infer 视频 | [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s） |
 
-> **未上传：** 原始数据集（~481 MB）与 checkpoint（整次训练约 18 GB）。本地路径见文末。有 infer 视频可放到 `videos/` 后推送。
+> **未上传：** 原始数据集（~481 MB）与 checkpoint（整次训练约 18 GB）。本地路径见文末。
 
 对照实验：[stack_bowls（三色叠碗）](https://github.com/upnana/stack_bowls)。
 
@@ -45,7 +46,8 @@ pass_tape/
 │   ├── dataset_info_4cam.json
 │   ├── train_config_060000.json
 │   └── policy_config_060000.json
-└── videos/                   # 真机 infer 视频（可选）
+└── videos/
+    └── eval_pass_tape.mp4    # 真机闭环推理片段（~79 s）
 ```
 
 脚本默认 `PROJECT_ROOT=/home/rxn/lerobot`、conda 环境 `lerobot`，可按本机路径改环境变量。
@@ -258,6 +260,8 @@ Latency 为同架构参考测得，本任务未单独重测。
 | 成功 | ≈ 2 |
 | **SR** | **≈ 2/3 ≈ 67%**（可报 ≥50%；N 小） |
 | 条件规律 | **只要第一臂抓住，后续 pass+入盘基本成功** |
+
+**真机推理视频：** [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s 闭环 rollout）。
 
 ### 5.6 失败模式
 
