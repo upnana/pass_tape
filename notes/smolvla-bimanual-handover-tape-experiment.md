@@ -139,15 +139,17 @@ outputs/train/smolvla_bimanual_4cam_20260717_150424/checkpoints/
 
 ### 5.2 失败模式（本实验核心观察）
 
-#### A. 瓶颈在第一臂抓取，不在交接
+#### A. 瓶颈在右臂抓取，不在交接
 
-> 容易失败的地方 **不是** 另一臂去接双面胶，而是 **第一臂去夹双面胶** 时出现 **空抓（空夹）**。  
+> 事先以为难点是 **胶带交接（handover）**。  
+> 真机观察：容易失败的地方 **不是** 另一臂去接双面胶，而是 **right arm 有时不能准确抓住 tape**（抓偏 / 空抓）。  
 > 一旦夹住并进入 handover，出错明显变少。
 
 **解读：**
 - 接触式抓取对位容差小（卷材圆柱、视角遮挡、深度估计弱）。
 - Handover / place 更偏「已持物后的运动原语」，示教更一致，BC 更好学。
-- 面试可说：长任务 SR 常由 **最难子技能** 决定；这里是 **initial grasp**，不是 bimanual pass 本身。
+- 面试可说：长任务 SR 常由 **最难子技能** 决定；这里是 **right-arm initial grasp**，不是 bimanual pass 本身。
+- Latency / Inference time 与 SR 要分报：policy ~150 ms、episode 时限 65 s、SR≈2/3；失败归因写清「预期交接难 → 实际右臂抓取难」。
 
 #### B. 「第一臂抓住 ≈ 整条成功」
 

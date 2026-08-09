@@ -18,8 +18,9 @@
 | 训练 | 计划 200k step，手动停在 ~120k；2×3090，batch 4/卡（effective 8） |
 | 真机甜区 ckpt | **`060000`**（约 20 epoch 口径） |
 | Latency（参考） | ~**148 ms** / `select_action`（3090，同架构蓝块任务测得） |
-| 真机 SR（informal） | ≈ **2/3（≥50%）**，N≈3；瓶颈在 **第一臂空抓** |
+| 真机 SR（informal） | ≈ **2/3（≥50%）**，N≈3；瓶颈在 **右臂抓取不准 / 空抓**（不是交接） |
 | 真机 infer 视频 | [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s） |
+| 关键结论 | 事先以为 **胶带交接** 会出问题；真机失败主因是 **right arm 有时不能准确抓住 tape** |
 
 > **未上传：** 原始数据集（~481 MB）与 checkpoint（整次训练约 18 GB）。本地路径见文末。
 
@@ -91,14 +92,14 @@ USB 相机易掉线：拔插、杀掉残留 preview（`fuser`），再重新核�
 grasp(双面胶)  →  handover(递给另一臂)  →  place(黄盘)
 ```
 
-经验结论：**瓶颈在第一臂抓取，不在交接接爪。**  
-只要第一臂夹住胶带，后续 pass + 入盘很少出错。
+经验结论：**瓶颈在右臂（抓取臂）对 tape 的准确定位与夹取，不在双臂交接。**  
+事先预期「handover 难」，真机观察却是：只要抓住，pass + 入盘很少错；失败多为 right arm **抓偏 / 空抓**。
 
 采集建议：
 
 1. 打乱胶带起始位姿，黄盘位置相对固定。
-2. 删掉 / 重录 **空抓** demo，质量优先于盲目加 episode。
-3. 保证腕相机能看见胶带卷。
+2. 删掉 / 重录 **空抓、抓偏** demo，质量优先于盲目加 episode。
+3. 保证腕相机能看见胶带卷，尤其强化 **右臂接近与闭合** 段。
 4. 任务文本写全三步（4cam 已写全；旧 3cam 文本偏泛）。
 
 ---
@@ -235,22 +236,39 @@ bash scripts/infer_smolvla_bimanual_4cam_20260717_ep25.sh robot
 
 | 参数 | 本实验 | 说明 |
 |------|--------|------|
-| `EPISODE_TIME_S` | **65** | 任务时限（Duration） |
+| `EPISODE_TIME_S` | **65** | 任务时限（Inference / episode duration） |
 | `RESET_TIME_S` | 5 | trial 间隔 |
 | 控制 FPS | **30** | 周期预算 ≈ 33 ms |
 | `n_action_steps` | **5** | 训练 chunk 默认 50；真机缩短更跟手 |
 | `max_relative_target` | 50 | 相对动作限幅 |
 
-### 5.4 Latency / Hz（务必分清三层）
+### 5.4 Latency · Inference time · SR（分析）
 
-| 名词 | 含义 | 本实验量级 |
-|------|------|------------|
-| Policy latency | 一次前向 | ~**148–150 ms**（~6.8 Hz） |
-| Control rate | 发关节指令 | **30 Hz** |
-| Episode duration | 评测时限 | **65 s** |
+面试 / 写报告时把三个「时间 / 成功率」拆开，不要混谈：
 
-策略前向慢于 33 ms 控制预算 → **必须 action chunk**，不能每帧重推。  
-Latency 为同架构参考测得，本任务未单独重测。
+| 名词 | 含义 | 本实验量级 | 说明 |
+|------|------|------------|------|
+| **Policy latency** | 一次 `select_action` 前向 | ~**148–150 ms**（~6.8 Hz，3090） | 同架构蓝块任务参考；本任务未单独重测 |
+| **Control rate** | 往关节发指令的频率 | **30 Hz**（预算 ≈ 33 ms/帧） | latency ≫ 33 ms → **必须 action chunk** |
+| **Inference / episode time** | 单次真机评测时限 | **`EPISODE_TIME_S=65`** | 这是任务墙钟上限，不是 148 ms |
+| **有效重规划周期** | 新观测再开一段 chunk | ≈ \(5/30 ≈ 0.17\) s | `n_action_steps=5` |
+| **Success Rate (SR)** | 零干预任务成功比例 | informal **≈ 2/3（≥50%）**，N≈3 | 正式建议 \(N\ge10\) |
+
+**SR 与失败归因（核心）：**
+
+> 一开始以为难点在 **胶带交接（handover）**——双臂对接、传物容易失手。  
+> 真机评测后发现：主要失败点在于 **right arm 有时不能准确抓住 tape**（抓偏 / 空抓）。  
+> 一旦右臂夹稳进入 handover，后续传给另一臂、放入黄盘 **很少再出错**。
+
+因此：
+
+\[
+P(\text{full success}) \approx P(\text{right-arm grasp}) \times P(\text{pass+place}\mid\text{grasp})
+\]
+
+经验上 \(P(\text{pass+place}\mid\text{grasp})\) 很高 → 提升 SR 应优先做 **右臂抓取段**（更多成功抓取 demo、清洗空抓、腕相机对准 tape），而不是只堆交接数据。
+
+对照 3cam 训满悬停：修好过拟合与控制后，能力上限落在 **感知–抓取**，而不是「整段不动」或「交接必炸」。
 
 ### 5.5 Informal 结果（甜区 ckpt）
 
@@ -259,18 +277,17 @@ Latency 为同架构参考测得，本任务未单独重测。
 | Trials | ≈ 3 |
 | 成功 | ≈ 2 |
 | **SR** | **≈ 2/3 ≈ 67%**（可报 ≥50%；N 小） |
-| 条件规律 | **只要第一臂抓住，后续 pass+入盘基本成功** |
+| 预期难点 | 胶带交接 |
+| **实际主失败** | **right arm 抓取不准 / 空抓** |
+| 条件规律 | 抓住后 pass + 入盘基本成功 |
 
 **真机推理视频：** [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s 闭环 rollout）。
 
-### 5.6 失败模式
+### 5.6 失败模式（补充）
 
-1. **瓶颈在第一臂空抓，不在交接。**  
-   接触式抓取对位容差小；handover/place 更像持物后运动原语，BC 更好学。
-2. **条件成功视角：**  
-   \(P(\text{full}) \approx P(\text{first grasp}) × P(\text{pass+place}\mid grasp)\)，后者经验上很高 → 提升 SR 应优先加强 **抓取段数据 / 清洗空抓 / 腕相机对齐**。
-3. **3cam 训满悬停 vs 4cam 甜区空抓：**  
-   修好过拟合后，能力上限暴露在感知-抓取，而不是整段不动。
+1. **预期 vs 现实：** 以为 handover 会出问题 → 实际是右臂 first grasp。
+2. **抓取难、交接易：** 圆柱胶带对位容差小、深度/遮挡敏感；持物后的 pass/place 示教更一致，BC 更好学。
+3. **改进方向：** 加右臂接近与闭合多样性；删空抓段；保证 `right` / 腕相机可见 tape；正式扫 18/20/25 ep ckpt，\(N\ge10\)。
 
 ---
 
@@ -324,8 +341,9 @@ Config 快照（无权重）：`docs/*_060000.json`。
 Infer       : Duration 65 s/ep | FPS 30 | n_action_steps=5
 Latency 参考: ~148 ms/select_action（~6.8 Hz，3090）
 控制预算    : 33 ms/帧 @ 30 Hz → 需要 action chunk
-真机 SR     : ~2/3（≥50%），N≈3 informal；first-grasp 门控
-失败模式    : 第一臂空抓；抓住后 pass 很少失败
+真机 SR     : ~2/3（≥50%），N≈3 informal
+失败分析    : 预期难点=胶带交接；实际主失败=right arm 抓不准/空抓
+条件规律    : 抓住后 pass+入盘很少失败
 3cam 教训   : 150k loss~0.001 → 悬停；用中期 ckpt
 ```
 
