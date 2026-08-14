@@ -24,17 +24,13 @@
 
 > **未上传：** 原始数据集（~481 MB）与 checkpoint（整次训练约 18 GB）。本地路径见文末。
 
-**Eval 预览（打开工程即可看）：** [`docs/eval_player.html`](docs/eval_player.html) · [`videos/index.html`](videos/index.html)
+### Eval 预览（打开 README 即可看）
 
 <p align="center">
-  <video src="https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4" poster="videos/eval_pass_tape_poster.jpg" controls width="720" playsinline></video>
+  <img src="videos/eval_pass_tape_preview.webp" width="720" alt="pass tape eval preview" />
 </p>
 
-https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4
-
-<p align="center">
-  <img src="videos/eval_pass_tape_preview.gif" width="640" alt="pass tape eval preview" />
-</p>
+完整 mp4（约 79 s）：[`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4) · [Release 下载](https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4) · [HTML 播放器](docs/eval_player.html)
 
 对照实验：[stack_bowls（三色叠碗）](https://github.com/upnana/stack_bowls)。
 
@@ -63,7 +59,8 @@ pass_tape/
 └── videos/
     ├── eval_pass_tape.mp4           # 真机闭环（~79 s，H.264）
     ├── eval_pass_tape_poster.jpg
-    ├── eval_pass_tape_preview.gif
+    ├── eval_pass_tape_preview.webp
+├── eval_pass_tape_preview.gif
     └── index.html                   # ★ 打开即可浏览器预览
 ```
 
@@ -297,13 +294,7 @@ P(\text{full success}) \approx P(\text{right-arm grasp}) \times P(\text{pass+pla
 | **实际主失败** | **right arm 抓取不准 / 空抓** |
 | 条件规律 | 抓住后 pass + 入盘基本成功 |
 
-**真机推理视频：** [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s，H.264）· [HTML 预览](docs/eval_player.html)
-
-<p align="center">
-  <video src="https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4" poster="videos/eval_pass_tape_poster.jpg" controls width="720" playsinline></video>
-</p>
-
-https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4
+**真机推理视频：** 见上方 **Eval 预览**（README 内嵌动画）· 完整 [`videos/eval_pass_tape.mp4`](https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4)
 
 ### 5.6 失败模式（补充）
 

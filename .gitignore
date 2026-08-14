@@ -32,3 +32,4 @@ __pycache__/
 !videos/*.jpg
 !videos/*.html
 !docs/*.html
+!videos/*.webp
