@@ -19,10 +19,22 @@
 | 真机甜区 ckpt | **`060000`**（约 20 epoch 口径） |
 | Latency（参考） | ~**148 ms** / `select_action`（3090，同架构蓝块任务测得） |
 | 真机 SR（informal） | ≈ **2/3（≥50%）**，N≈3；瓶颈在 **右臂抓取不准 / 空抓**（不是交接） |
-| 真机 infer 视频 | [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s） |
+| 真机 infer 视频 | [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s，H.264）· [HTML 预览](docs/eval_player.html) |
 | 关键结论 | 事先以为 **胶带交接** 会出问题；真机失败主因是 **right arm 有时不能准确抓住 tape** |
 
 > **未上传：** 原始数据集（~481 MB）与 checkpoint（整次训练约 18 GB）。本地路径见文末。
+
+**Eval 预览（打开工程即可看）：** [`docs/eval_player.html`](docs/eval_player.html) · [`videos/index.html`](videos/index.html)
+
+<p align="center">
+  <video src="https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4" poster="videos/eval_pass_tape_poster.jpg" controls width="720" playsinline></video>
+</p>
+
+https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4
+
+<p align="center">
+  <img src="videos/eval_pass_tape_preview.gif" width="640" alt="pass tape eval preview" />
+</p>
 
 对照实验：[stack_bowls（三色叠碗）](https://github.com/upnana/stack_bowls)。
 
@@ -43,12 +55,16 @@ pass_tape/
 ├── notes/
 │   └── smolvla-bimanual-handover-tape-experiment.md
 ├── docs/
+│   ├── eval_player.html             # ★ 浏览器预览真机视频
 │   ├── bimanual_smolvla_project_summary_zh.md
 │   ├── dataset_info_4cam.json
 │   ├── train_config_060000.json
 │   └── policy_config_060000.json
 └── videos/
-    └── eval_pass_tape.mp4    # 真机闭环推理片段（~79 s）
+    ├── eval_pass_tape.mp4           # 真机闭环（~79 s，H.264）
+    ├── eval_pass_tape_poster.jpg
+    ├── eval_pass_tape_preview.gif
+    └── index.html                   # ★ 打开即可浏览器预览
 ```
 
 脚本默认 `PROJECT_ROOT=/home/rxn/lerobot`、conda 环境 `lerobot`，可按本机路径改环境变量。
@@ -281,7 +297,13 @@ P(\text{full success}) \approx P(\text{right-arm grasp}) \times P(\text{pass+pla
 | **实际主失败** | **right arm 抓取不准 / 空抓** |
 | 条件规律 | 抓住后 pass + 入盘基本成功 |
 
-**真机推理视频：** [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s 闭环 rollout）。
+**真机推理视频：** [`videos/eval_pass_tape.mp4`](videos/eval_pass_tape.mp4)（约 79 s，H.264）· [HTML 预览](docs/eval_player.html)
+
+<p align="center">
+  <video src="https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4" poster="videos/eval_pass_tape_poster.jpg" controls width="720" playsinline></video>
+</p>
+
+https://github.com/upnana/pass_tape/releases/download/eval-demo/eval_pass_tape.mp4
 
 ### 5.6 失败模式（补充）
 
